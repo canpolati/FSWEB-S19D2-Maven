@@ -41,6 +41,7 @@ class ControllerAndPropertiesTest {
 
     @Autowired
     private Environment env;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -89,7 +90,6 @@ class ControllerAndPropertiesTest {
         String serverPort = env.getProperty("server.port");
         assertThat(serverPort).isEqualTo("8080");
 
-
         String datasourceUrl = env.getProperty("spring.datasource.url");
         assertNotNull(datasourceUrl);
 
@@ -101,10 +101,7 @@ class ControllerAndPropertiesTest {
 
         String hibernateDdlAuto = env.getProperty("spring.jpa.hibernate.ddl-auto");
         assertNotNull(hibernateDdlAuto);
-
-
     }
-
 
     @Test
     @DisplayName("AccountController::findAll")
@@ -115,7 +112,7 @@ class ControllerAndPropertiesTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is((int) sampleAccountForAccountControllerTest.getId())))
+                .andExpect(jsonPath("$[0].id", is(sampleAccountForAccountControllerTest.getId().intValue())))
                 .andExpect(jsonPath("$[0].accountName", is(sampleAccountForAccountControllerTest.getAccountName())));
 
         verify(accountService).findAll();
@@ -129,7 +126,7 @@ class ControllerAndPropertiesTest {
         mockMvc.perform(get("/account/{id}", sampleAccountForAccountControllerTest.getId()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is((int) sampleAccountForAccountControllerTest.getId())))
+                .andExpect(jsonPath("$.id", is(sampleAccountForAccountControllerTest.getId().intValue())))
                 .andExpect(jsonPath("$.accountName", is(sampleAccountForAccountControllerTest.getAccountName())));
 
         verify(accountService).find(sampleAccountForAccountControllerTest.getId());
@@ -145,7 +142,7 @@ class ControllerAndPropertiesTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleAccountForAccountControllerTest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is((int) sampleAccountForAccountControllerTest.getId())))
+                .andExpect(jsonPath("$.id", is(sampleAccountForAccountControllerTest.getId().intValue())))
                 .andExpect(jsonPath("$.accountName", is(sampleAccountForAccountControllerTest.getAccountName())));
 
         verify(customerService).find(sampleCustomerForAccountControllerTest.getId());
@@ -175,14 +172,13 @@ class ControllerAndPropertiesTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedAccount)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is((int) updatedAccount.getId())))
+                .andExpect(jsonPath("$.id", is(updatedAccount.getId().intValue())))
                 .andExpect(jsonPath("$.accountName", is(updatedAccount.getAccountName())))
                 .andExpect(jsonPath("$.moneyAmount", is(updatedAccount.getMoneyAmount())));
 
         verify(customerService).find(customerId);
         given(customerService.save(any())).willReturn(sampleCustomerForAccountControllerTest);
     }
-
 
     @Test
     @DisplayName("AccountController::remove")
@@ -192,7 +188,7 @@ class ControllerAndPropertiesTest {
 
         mockMvc.perform(delete("/account/{id}", sampleAccountForAccountControllerTest.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is((int) sampleAccountForAccountControllerTest.getId())))
+                .andExpect(jsonPath("$.id", is(sampleAccountForAccountControllerTest.getId().intValue())))
                 .andExpect(jsonPath("$.accountName", is(sampleAccountForAccountControllerTest.getAccountName())))
                 .andExpect(jsonPath("$.moneyAmount", is(sampleAccountForAccountControllerTest.getMoneyAmount())));
 
@@ -205,13 +201,17 @@ class ControllerAndPropertiesTest {
     void testSaveCustomer() throws Exception {
         given(customerService.save(any())).willReturn(sampleCustomerForCustomerControllerTest);
 
-        CustomerResponse expectedResponse = new CustomerResponse(sampleCustomerForCustomerControllerTest.getId(), sampleCustomerForCustomerControllerTest.getEmail(), sampleCustomerForCustomerControllerTest.getSalary());
+        CustomerResponse expectedResponse = new CustomerResponse(
+                sampleCustomerForCustomerControllerTest.getId(),
+                sampleCustomerForCustomerControllerTest.getEmail(),
+                sampleCustomerForCustomerControllerTest.getSalary()
+        );
 
         mockMvc.perform(post("/customer")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleCustomerForCustomerControllerTest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is((int) expectedResponse.id())))
+                .andExpect(jsonPath("$.id", is(expectedResponse.id().intValue())))
                 .andExpect(jsonPath("$.email", is(expectedResponse.email())))
                 .andExpect(jsonPath("$.salary", is(expectedResponse.salary())));
 
